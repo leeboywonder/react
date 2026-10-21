@@ -6,7 +6,9 @@ param(
 $ErrorActionPreference = "Stop"
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
-    $OutputDirectory = Join-Path $scriptDirectory "output"
+    $outputRoot = Join-Path $scriptDirectory "output"
+    $runName = "build-" + (Get-Date -Format "yyyyMMdd-HHmmss")
+    $OutputDirectory = Join-Path $outputRoot $runName
 }
 $sourceDirectory = Join-Path $scriptDirectory "source"
 $masterSource = Join-Path $sourceDirectory "ONGEN PD_DEFINITION_MASTER_WORKFLOW_V5.1.6.5.xlsm"
@@ -53,6 +55,7 @@ $excel = $null
 $master = $null
 $field = $null
 $saved = $false
+$failureRecord = $null
 
 try {
     Copy-Item -LiteralPath $masterSource -Destination $masterOutput -Force
@@ -65,7 +68,9 @@ try {
     $excel.Visible = $false
     $excel.DisplayAlerts = $false
     $excel.EnableEvents = $false
-    $excel.AutomationSecurity = 3
+    # The source is the controlled workbook shipped in this package. Events are
+    # disabled before opening so existing Workbook_Open code cannot run.
+    $excel.AutomationSecurity = 1
 
     $master = $excel.Workbooks.Open($masterOutput, 0, $false)
     foreach ($module in @(
@@ -77,7 +82,6 @@ try {
         Replace-StandardModule $master (Join-Path $scriptDirectory "vba\master\$module")
     }
 
-    $excel.AutomationSecurity = 1
     $excel.Run("'" + $master.Name.Replace("'", "''") + "'!ONGEN_InstallControlCenter")
     $master.Save()
     $master.Close($true)
@@ -106,7 +110,9 @@ try {
     Write-Host "ONGEN Excel suite created in: $OutputDirectory" -ForegroundColor Green
 }
 catch {
-    Write-Error $_
+    $failureRecord = $_
+    Write-Host "BUILD ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "PowerShell location: $($_.InvocationInfo.PositionMessage)" -ForegroundColor Red
     if ($_.Exception.Message -match "VBProject|programmatic access|1004") {
         Write-Host "In Excel, enable: File > Options > Trust Center > Trust Center Settings > Macro Settings > Trust access to the VBA project object model." -ForegroundColor Yellow
     }
@@ -118,9 +124,14 @@ finally {
     [GC]::Collect()
     [GC]::WaitForPendingFinalizers()
     Stop-Transcript | Out-Null
-    if (-not $saved) {
-        Remove-Item -LiteralPath $masterOutput -Force -ErrorAction SilentlyContinue
-        Remove-Item -LiteralPath $fieldOutput -Force -ErrorAction SilentlyContinue
-        throw "Build failed. No generated Excel workbooks were retained. See '$logPath'."
-    }
 }
+
+if (-not $saved) {
+    Remove-Item -LiteralPath $masterOutput -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath $fieldOutput -Force -ErrorAction SilentlyContinue
+    Write-Host "Build failed. The original error is recorded in '$logPath'." -ForegroundColor Red
+    throw $failureRecord
+}
+
+$latestPath = Join-Path (Split-Path -Parent $OutputDirectory) "LATEST-BUILD.txt"
+Set-Content -LiteralPath $latestPath -Value $OutputDirectory -Encoding UTF8

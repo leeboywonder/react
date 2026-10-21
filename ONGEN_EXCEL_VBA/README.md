@@ -7,11 +7,11 @@ This is the Excel-first delivery. It builds the combined engineering suite from 
 1. Download and extract the complete `ONGEN_Excel_VBA_0.2.zip` package.
 2. Use a Windows computer with desktop Microsoft Excel installed.
 3. In Excel, enable **File > Options > Trust Center > Trust Center Settings > Macro Settings > Trust access to the VBA project object model**. This is required only so the builder can install the reviewed modules.
-4. Double-click `Start-Build.cmd`.
-5. Open `output\ONGEN Excel Engineering Suite V0.2.xlsm` and select **Enable Content** only after confirming the file came from this repository/package.
+4. Close any open ONGEN workbooks, then double-click `Start-Build.cmd`.
+5. Open `output\build-YYYYMMDD-HHMMSS\ONGEN Excel Engineering Suite V0.2.xlsm` from the newest build folder and select **Enable Content** only after confirming the file came from this repository/package. `output\LATEST-BUILD.txt` also records the latest successful folder.
 6. Open the `ONGEN CONTROL CENTER` worksheet and run **System self-check** before an engineering workflow.
 
-The build stops and removes partially generated workbooks if a VBA module cannot be installed or the control center cannot run. A detailed log is written to `output\ONGEN-build.log`.
+Every run uses a new timestamped folder, so an earlier workbook left open in Excel cannot block or overwrite the next build. The build stops and removes partially generated workbooks if a VBA module cannot be installed or the control center cannot run. Its detailed log remains in that run's folder as `ONGEN-build.log`, including the original failure rather than a generic replacement error.
 
 ## What the installer changes
 
