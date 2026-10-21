@@ -116,7 +116,7 @@ Public Sub ONGEN_SelfCheck()
                       "ONGEN_FUNCTION_CODE_LOOKUP.csv")
     p = ThisWorkbook.Path & Application.PathSeparator
     For i = LBound(companion) To UBound(companion)
-        If Len(Dir$(p & CStr(companion(i)))) > 0 Then
+        If FileExistsSafe(p & CStr(companion(i))) Then
             report = report & "OK  File: " & CStr(companion(i)) & vbCrLf
         Else
             report = report & "CHECK  File not found: " & CStr(companion(i)) & vbCrLf
@@ -223,6 +223,20 @@ Private Function SheetExists(ByVal sheetName As String) As Boolean
     Set ws = ThisWorkbook.Worksheets(sheetName)
     SheetExists = Not ws Is Nothing
     On Error GoTo 0
+End Function
+
+Private Function FileExistsSafe(ByVal filePath As String) As Boolean
+    Dim fileSystem As Object
+    On Error GoTo NotFound
+    If Len(Trim$(filePath)) = 0 Then Exit Function
+    Set fileSystem = CreateObject("Scripting.FileSystemObject")
+    FileExistsSafe = fileSystem.FileExists(filePath)
+CleanExit:
+    Set fileSystem = Nothing
+    Exit Function
+NotFound:
+    FileExistsSafe = False
+    Resume CleanExit
 End Function
 
 Private Sub AppendLog(ByVal actionName As String, ByVal result As String, ByVal details As String)

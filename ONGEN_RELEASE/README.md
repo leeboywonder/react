@@ -25,7 +25,7 @@ PD Definition, Field Devices, IO Generator, EAS, and function-library workflow.
 
 | File | SHA-256 |
 |---|---|
-| `ONGEN_Excel_VBA_0.2.zip` | `a991096ee0734bd856d128fa19fc18db0b7ea23f5bd3caa96e9aa52aa568021c` |
+| `ONGEN_Excel_VBA_0.2.zip` | `75e07825180392456aadb3e673d257ac579a078af744374f8032db9aa15a7258` |
 | `ONGEN_Suite_0.1.0.zip` | `6b4f67c93911827d08d8f96cff19892192a5bab725f30b14e9b95b9611419dac` |
 | `ONGEN_Audit_Report.pdf` | `71d70e8531543d4edc1d4f49ba22a9a92ae848a5ceae5041218c62f3381191da` |
 | `ONGEN_Engineering_Review.xlsx` | `538f2b3c5e0abc20981f841b9f2e6f3985e370594f2729a0c7851e69daa3f482` |
