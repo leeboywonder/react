@@ -1,10 +1,14 @@
 [CmdletBinding()]
 param(
-    [string]$OutputDirectory = (Join-Path $PSScriptRoot "output")
+    [string]$OutputDirectory
 )
 
 $ErrorActionPreference = "Stop"
-$sourceDirectory = Join-Path $PSScriptRoot "source"
+$scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
+if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
+    $OutputDirectory = Join-Path $scriptDirectory "output"
+}
+$sourceDirectory = Join-Path $scriptDirectory "source"
 $masterSource = Join-Path $sourceDirectory "ONGEN PD_DEFINITION_MASTER_WORKFLOW_V5.1.6.5.xlsm"
 $fieldSource = Join-Path $sourceDirectory "ONGEN Field Devices Specification -v2.1.7.1.xlsm"
 $masterOutput = Join-Path $OutputDirectory "ONGEN Excel Engineering Suite V0.2.xlsm"
@@ -70,7 +74,7 @@ try {
         "mod20_DeviceWorkflow.bas",
         "modONGEN_SuiteControl.bas"
     )) {
-        Replace-StandardModule $master (Join-Path $PSScriptRoot "vba\master\$module")
+        Replace-StandardModule $master (Join-Path $scriptDirectory "vba\master\$module")
     }
 
     $excel.AutomationSecurity = 1
@@ -82,7 +86,7 @@ try {
 
     $excel.AutomationSecurity = 3
     $field = $excel.Workbooks.Open($fieldOutput, 0, $false)
-    Replace-StandardModule $field (Join-Path $PSScriptRoot "vba\field\EXPORT_TO_IOGEN.bas")
+    Replace-StandardModule $field (Join-Path $scriptDirectory "vba\field\EXPORT_TO_IOGEN.bas")
     $field.Save()
     $field.Close($true)
     Release-ComObject $field
